@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Física Solver Pro</title>
+<style>
+body{font-family:Arial,sans-serif;background:#eef2f7;margin:0}
+header{background:#1f4aa8;color:#fff;padding:15px;text-align:center}
+main{max-width:1200px;margin:auto;padding:20px}
+textarea{width:100%;height:140px}
+button{padding:10px 16px;margin:6px;cursor:pointer}
+.card{background:#fff;padding:15px;border-radius:10px;margin-top:15px}
+canvas{border:1px solid #ccc;background:#fff;max-width:100%}
+pre{white-space:pre-wrap}
+</style>
+</head>
+<body>
+<header><h1>Física Solver Pro</h1><p>Funciona sin API ni claves</p></header>
+<main>
+<div class="card">
+<h3>Enunciado</h3>
+<textarea id="txt">Un bloque de 10 kg recibe una fuerza de 50 N.</textarea><br>
+<button onclick="resolver()">Resolver</button>
+</div>
+
+<div class="card">
+<h3>Resultado</h3>
+<div id="out"></div>
+</div>
+
+<div class="card">
+<h3>Diagrama de cuerpo libre</h3>
+<canvas id="c" width="900" height="450"></canvas>
+</div>
+</main>
+
+<script>
+function extraer(txt,unidad){
+ let r=new RegExp("(\\\\d+(?:\\\\.\\\\d+)?)\\\\s*"+unidad,"i");
+ let m=txt.match(r);
+ return m?parseFloat(m[1]):null;
+}
+
+function resolver(){
+ let t=document.getElementById("txt").value.toLowerCase();
+ let m=extraer(t,"kg")||10;
+ let F=extraer(t,"n")||50;
+
+ let g=9.81;
+ let P=m*g;
+ let N=P;
+ let a=F/m;
+
+ document.getElementById("out").innerHTML=`
+ <b>Masa:</b> ${m} kg<br>
+ <b>Fuerza:</b> ${F} N<br>
+ <b>Peso:</b> ${P.toFixed(2)} N<br>
+ <b>Normal:</b> ${N.toFixed(2)} N<br>
+ <b>Aceleración:</b> ${a.toFixed(2)} m/s²<br><br>
+ <b>Fórmulas:</b><br>
+ P=m·g<br>
+ F=m·a<br>
+ a=F/m
+ `;
+
+ dibujar(F,P,N);
+}
+
+function flecha(ctx,x,y,dx,dy,label){
+ ctx.beginPath();
+ ctx.moveTo(x,y);
+ ctx.lineTo(x+dx,y+dy);
+ ctx.stroke();
+ ctx.fillText(label,x+dx+5,y+dy+5);
+}
+
+function dibujar(F,P,N){
+ let c=document.getElementById("c");
+ let ctx=c.getContext("2d");
+ ctx.clearRect(0,0,c.width,c.height);
+
+ let cx=450,cy=225;
+
+ ctx.strokeStyle="#ddd";
+ for(let i=0;i<c.width;i+=50){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,c.height);ctx.stroke();}
+ for(let i=0;i<c.height;i+=50){ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(c.width,i);ctx.stroke();}
+
+ ctx.strokeStyle="black";
+ ctx.fillStyle="gray";
+ ctx.fillRect(cx-25,cy-25,50,50);
+
+ ctx.strokeStyle="red";
+ flecha(ctx,cx,cy,120,0,"F="+F+"N");
+
+ ctx.strokeStyle="green";
+ flecha(ctx,cx,cy,0,-120,"N");
+
+ ctx.strokeStyle="blue";
+ flecha(ctx,cx,cy,0,120,"P");
+}
+resolver();
+</script>
+</body>
+</html>
